@@ -9,9 +9,8 @@ import pandas as pd
 
 def scrape_all():
     #set up splinter
-
     # Initiate headless driver for deployment
-    executable_path = {'executable_path': ChromeDriverManager(version="98.0.4758.102").install()}
+    executable_path = {'executable_path': ChromeDriverManager(version="99.0.4844.51").install()}
     #set headless to false to see splinter in action
     browser = Browser('chrome', **executable_path, headless=True)
 
@@ -33,7 +32,7 @@ def scrape_all():
 def mars_news(browser):
     # Visit the mars nasa news site
     # Convert the browser html to a soup object and then quit the browser
-    url = 'https://redplanetscience.com'
+    url = 'https://data-class-mars.s3.amazonaws.com/Mars/index.html'
     browser.visit(url)
     # Optional delay for loading the page
     browser.is_element_present_by_css('div.list_text', wait_time=1)
@@ -63,7 +62,7 @@ def mars_news(browser):
 
 def featured_image(browser):
     # Visit URL
-    url = 'https://spaceimages-mars.com'
+    url = 'https://data-class-jpl-space.s3.amazonaws.com/JPL_Space/index.html'
     browser.visit(url)
 
     # Find and click the full image button
@@ -83,7 +82,7 @@ def featured_image(browser):
         return None
 
     # Use the base URL to create an absolute URL
-    img_url = f'https://spaceimages-mars.com/{img_url_rel}'
+    img_url = f'https://data-class-jpl-space.s3.amazonaws.com/JPL_Space/{img_url_rel}'
     #return the absolute URL
     return img_url
 
@@ -92,7 +91,7 @@ def featured_image(browser):
 def mars_facts():
     try:    
         #read_html function returns a list of tables found in the HTML, index 0 pulls first table it incounters
-        df = pd.read_html('https://galaxyfacts-mars.com')[0]
+        df = pd.read_html('https://data-class-mars-facts.s3.amazonaws.com/Mars_Facts/index.html')[0]
     #baseException is used to catch multiple errors ie general error thrown... thrown might be a JAVA spesific term
     except BaseException:
         return None
@@ -103,9 +102,8 @@ def mars_facts():
     df.set_index('description', inplace=True)
     
     #return the converted the DF back to html
-    return df.to_html()
+    return df.to_html(classes="table table-striped")
 
 if __name__ == "__main__":
-
     # If running as script, print scraped data
     print(scrape_all())
