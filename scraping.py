@@ -21,7 +21,9 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
-        "last_modified": dt.datetime.now()
+        "last_modified": dt.datetime.now(),
+        #hemipheres data 
+        "hemisphere": scrape_hemispheres(browser),
     }
 
     # Stop webdriver and return data
@@ -103,6 +105,51 @@ def mars_facts():
     
     #return the converted the DF back to html
     return df.to_html(classes="table table-striped")
+
+#scrape hemispheres
+def scrape_hemispheres(browser):
+
+    url = 'https://marshemispheres.com/'
+    browser.visit(url)
+    #Create a list to hold the images and titles.
+    hemisphere_image_urls = []
+    html = browser.html
+
+    #reimport soup for some reasons
+    from bs4 import BeautifulSoup as soup
+
+    soup = soup(html, "html.parser")
+
+    #try except block for error handling
+    try:
+        div_items = soup.find_all("div", class_ = "item")
+        for div_item in div_items:
+            #empty dictionary for each hemisphere div
+            hemisphere = {'img_url':'','title':''}
+            #append relative url onto url to get img url
+            img_url = url + div_item.a.get("href")
+            #visit url in splinter
+            browser.visit(img_url)
+            #parse the html data
+            html_sub = browser.html
+            soup = soup(html_sub, "html.parser")
+            #get the jpeg relative url 
+            relative_jpeg_url = soup.find("li").a.get("href")
+            #append the jpeg url onto url
+            jpeg_url = url + relative_jpeg_url
+            #pass jpeg url into hemisphere dictionary
+            hemisphere['img_url']=(jpeg_url)
+            #find the title text
+            title = soup.find("h2", class_="title").text
+            #pass the title text into the hemishpere dictionary
+            hemisphere['title']=(title)
+            #append the hemisphere dictionary into hemi img url list
+            hemisphere_image_urls.append(hemisphere)
+    except AttributeError:
+        return None
+
+    #return hemi img url list
+    return hemisphere_image_urls
 
 if __name__ == "__main__":
     # If running as script, print scraped data
